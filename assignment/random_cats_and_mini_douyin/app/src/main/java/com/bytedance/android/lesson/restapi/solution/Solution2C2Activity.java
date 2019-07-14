@@ -1,9 +1,13 @@
 package com.bytedance.android.lesson.restapi.solution;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.bytedance.android.lesson.restapi.solution.bean.Feed;
 import com.bytedance.android.lesson.restapi.solution.utils.ResourceUtils;
@@ -28,6 +33,7 @@ public class Solution2C2Activity extends AppCompatActivity {
 
     private static final int PICK_IMAGE = 1;
     private static final int PICK_VIDEO = 2;
+    private static final int GRANT_PERMISSION = 3;
     private static final String TAG = "Solution2C2Activity";
     private RecyclerView mRv;
     private List<Feed> mFeeds = new ArrayList<>();
@@ -50,9 +56,13 @@ public class Solution2C2Activity extends AppCompatActivity {
             @Override public void onClick(View v) {
                 String s = mBtn.getText().toString();
                 if (getString(R.string.select_an_image).equals(s)) {
-                    chooseImage();
+                    if (requestReadExternalStoragePermission("select an image")) {
+                        chooseImage();
+                    }
                 } else if (getString(R.string.select_a_video).equals(s)) {
-                    chooseVideo();
+                    if (requestReadExternalStoragePermission("select a video")) {
+                        chooseVideo();
+                    }
                 } else if (getString(R.string.post_it).equals(s)) {
                     if (mSelectedVideo != null && mSelectedImage != null) {
                         postVideo();
@@ -66,6 +76,22 @@ public class Solution2C2Activity extends AppCompatActivity {
         });
 
         mBtnRefresh = findViewById(R.id.btn_refresh);
+    }
+
+    private boolean requestReadExternalStoragePermission(String explanation) {
+        if (ActivityCompat.checkSelfPermission(Solution2C2Activity.this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(Solution2C2Activity.this,
+                    Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                Toast.makeText(this, "You should grant external storage permission to continue " + explanation, Toast.LENGTH_SHORT).show();
+            } else {
+                ActivityCompat.requestPermissions(Solution2C2Activity.this, new String[] {
+                        Manifest.permission.READ_EXTERNAL_STORAGE
+                }, GRANT_PERMISSION);
+            }
+            return false;
+        } else {
+            return true;
+        }
     }
 
     private void initRecyclerView() {
@@ -96,12 +122,18 @@ public class Solution2C2Activity extends AppCompatActivity {
     }
 
     public void chooseImage() {
-        // TODO-C2 (4) Start Activity to select an image
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE);
     }
 
 
     public void chooseVideo() {
-        // TODO-C2 (5) Start Activity to select a video
+        Intent intent = new Intent();
+        intent.setType("video/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Video"), PICK_VIDEO);
     }
 
     @Override
