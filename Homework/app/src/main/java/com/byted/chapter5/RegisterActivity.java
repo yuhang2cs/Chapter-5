@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -46,6 +47,21 @@ public class RegisterActivity extends AppCompatActivity {
                     Toast.makeText(RegisterActivity.this, "密码不相等", Toast.LENGTH_SHORT).show();
                     return;
                 }
+                apiService.register(name,password,repassword).enqueue(new Callback<UserResponse>() {
+                    @Override
+                    public void onResponse(Call<UserResponse> call, Response<UserResponse> response) {
+                        if(response.body().user!=null)
+                            Toast.makeText(RegisterActivity.this,"注册成功"+response.body().user.username,Toast.LENGTH_SHORT).show();
+                        else{
+                            Toast.makeText(RegisterActivity.this,"注册失败"+response.body().errorMsg,Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<UserResponse> call, Throwable t) {
+                        Toast.makeText(RegisterActivity.this,"POST失败"+t.getMessage(),Toast.LENGTH_SHORT).show();
+                    }
+                });
                 // todo 做网络请求
 
 

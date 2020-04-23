@@ -19,5 +19,8 @@ import com.google.gson.annotations.SerializedName;
 class User {
     @SerializedName("nickname")
     public String nickname;
-
+    @SerializedName("username")
+    public String username;
+    @SerializedName("id")
+    public int id;
 }
